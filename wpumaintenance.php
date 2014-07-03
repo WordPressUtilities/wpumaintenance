@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.3
+Version: 0.4
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -23,9 +23,10 @@ class WPUWaitingPage
             'plugin_basename' => 'wpumaintenance'
         );
 
+        load_plugin_textdomain($this->options['id'], false, dirname(plugin_basename(__FILE__)) . '/lang/');
+
         $this->options['plugin_menuname'] = __('Maintenance mode', $this->options['id']);
         $this->opt_id = $this->options['opt_id'];
-        load_plugin_textdomain($this->options['id'], false, dirname(plugin_basename(__FILE__)) . '/lang/');
 
         if (is_admin()) {
             add_action('admin_menu', array(&$this,
@@ -83,7 +84,7 @@ class WPUWaitingPage
     function content_admin_page() {
 
         $opt = get_option($this->opt_id);
-        echo '<h1>Maintenance mode</h1>';
+        echo '<h1>' . $this->options['plugin_menuname'] . '</h1>';
         echo '<form action="" method="post">';
         echo '<p><label>' . __('Activate maintenance mode : ', $this->options['id']) . '</label>';
         echo '<select name="' . $this->opt_id . '" id="' . $this->opt_id . '">
@@ -97,20 +98,33 @@ class WPUWaitingPage
 
         // Try to include a HTML file
         $maintenanceFilenames = array(
+            'maintenance.php',
             'maintenance.html',
             'index.html'
         );
-        foreach ($maintenanceFilenames as $filename) {
-            $filepath = ABSPATH . '/' . $filename;
+
+        // Search in theme
+        $theme_dir = get_template_directory() . '/wpumaintenance';
+        if (is_dir($theme_dir)) {
+            $this->include_file_if_exists($theme_dir, $maintenanceFilenames);
+        }
+
+        // Search in the root folder
+        $this->include_file_if_exists(ABSPATH, $maintenanceFilenames);
+
+        // Or include the default maintenance page
+        include dirname(__FILE__) . '/includes/maintenance.php';
+        die;
+    }
+
+    function include_file_if_exists($dir, $filenames) {
+        foreach ($filenames as $filename) {
+            $filepath = $dir . '/' . $filename;
             if (file_exists($filepath)) {
                 include $filepath;
                 die;
             }
         }
-
-        // Or include the default maintenance page
-        include dirname(__FILE__) . '/includes/maintenance.php';
-        die;
     }
 }
 
