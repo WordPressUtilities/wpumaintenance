@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Maintenance page\n"
-"POT-Creation-Date: 2014-07-02 23:32+0100\n"
+"POT-Creation-Date: 2015-04-01 23:15+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.5\n"
+"X-Generator: Poedit 1.7.1\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: __;_e\n"
@@ -20,30 +20,34 @@ msgstr ""
 msgid "%s is in maintenance mode."
 msgstr "%s est en mode maintenance."
 
-#: .././wpumaintenance.php:26
+#: .././wpumaintenance.php:27
 msgid "Maintenance mode"
 msgstr "Mode maintenance"
 
-#: .././wpumaintenance.php:60
+#: .././wpumaintenance.php:129
 msgid "Off"
 msgstr "Désactivé"
 
-#: .././wpumaintenance.php:60
+#: .././wpumaintenance.php:129
 msgid "On"
 msgstr "Activé"
 
-#: .././wpumaintenance.php:88
+#: .././wpumaintenance.php:169
 msgid "Activate maintenance mode : "
 msgstr "Activer le mode maintenance : "
 
-#: .././wpumaintenance.php:90
+#: .././wpumaintenance.php:171
 msgid "No"
 msgstr "Non"
 
-#: .././wpumaintenance.php:91
+#: .././wpumaintenance.php:172
 msgid "Yes"
 msgstr "Oui"
 
-#: .././wpumaintenance.php:93
+#: .././wpumaintenance.php:176
+msgid "Authorize these IPs:"
+msgstr "Autoriser ces IPs :"
+
+#: .././wpumaintenance.php:179
 msgid "Save"
 msgstr "Enregistrer"

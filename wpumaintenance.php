@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.5
+Version: 0.5.1
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -166,14 +166,14 @@ class WPUWaitingPage {
         echo '<h1>' . $this->options['plugin_menuname'] . '</h1>';
         echo '<form action="" method="post">';
 
-        echo '<p><label>' . __('Activate maintenance mode : ', $this->options['id']) . '</label><br />';
+        echo '<p><label for="' . $this->opt_id . '">' . __('Activate maintenance mode : ', $this->options['id']) . '</label><br />';
         echo '<select name="' . $this->opt_id . '" id="' . $this->opt_id . '">
     <option ' . ($opt == '0' ? 'selected' : '') . ' value="0">' . __('No', $this->options['id']) . '</option>
     <option ' . ($opt == '1' ? 'selected' : '') . ' value="1">' . __('Yes', $this->options['id']) . '</option>
 </select></p>';
 
         $opt_ips = get_option($this->opt_id . '-authorized-ips');
-        echo '<p><label>' . __('Authorize these IPs:', $this->options['id']) . '</label><br />' . '<input type="text" name="' . $this->opt_id . '-authorized-ips" value="' . esc_attr($opt_ips) . '" />' . '</p>';
+        echo '<p><label for="' . $this->opt_id . '-authorized-ips">' . __('Authorize these IPs:', $this->options['id']) . '</label><br />' . '<input type="text" id="' . $this->opt_id . '-authorized-ips" name="' . $this->opt_id . '-authorized-ips" value="' . esc_attr($opt_ips) . '" />' . '</p>';
 
         echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
         submit_button(__('Save', $this->options['id']));
