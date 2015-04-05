@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.5.1
+Version: 0.5.2
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -145,7 +145,7 @@ class WPUWaitingPage {
             return;
         }
 
-        if (!wp_verify_nonce($_POST[$this->opt_id . '-noncefield'], $this->opt_id . '-nonceaction')) {
+        if (!isset($_POST[$this->opt_id . '-noncefield']) || !wp_verify_nonce($_POST[$this->opt_id . '-noncefield'], $this->opt_id . '-nonceaction')) {
             return;
         }
 
@@ -168,8 +168,8 @@ class WPUWaitingPage {
 
         echo '<p><label for="' . $this->opt_id . '">' . __('Activate maintenance mode : ', $this->options['id']) . '</label><br />';
         echo '<select name="' . $this->opt_id . '" id="' . $this->opt_id . '">
-    <option ' . ($opt == '0' ? 'selected' : '') . ' value="0">' . __('No', $this->options['id']) . '</option>
-    <option ' . ($opt == '1' ? 'selected' : '') . ' value="1">' . __('Yes', $this->options['id']) . '</option>
+    <option ' . selected($opt, '0', false) . ' value="0">' . __('No', $this->options['id']) . '</option>
+    <option ' . selected($opt, '1', false) . ' value="1">' . __('Yes', $this->options['id']) . '</option>
 </select></p>';
 
         $opt_ips = get_option($this->opt_id . '-authorized-ips');
