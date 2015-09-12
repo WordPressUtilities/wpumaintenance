@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.5.2
+Version: 0.6
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -12,7 +12,14 @@ Contributors: @ScreenFeedFr
 */
 
 class WPUWaitingPage {
+
     function __construct() {
+        add_action('init', array(&$this,
+            'init'
+        ) , 99);
+    }
+
+    function init() {
 
         $this->options = array(
             'id' => 'wpumaintenance',
@@ -37,6 +44,7 @@ class WPUWaitingPage {
             add_action('admin_init', array(&$this,
                 'content_admin_page_postAction'
             ));
+            return;
         }
 
         if ($this->has_maintenance()) {
@@ -158,6 +166,9 @@ class WPUWaitingPage {
         if (isset($_POST[$this->opt_id . '-authorized-ips'])) {
             update_option($this->opt_id . '-authorized-ips', $_POST[$this->opt_id . '-authorized-ips']);
         }
+        if (isset($_POST[$this->opt_id . '-page-content'])) {
+            update_option($this->opt_id . '-page-content', $_POST[$this->opt_id . '-page-content']);
+        }
     }
 
     function content_admin_page() {
@@ -175,8 +186,19 @@ class WPUWaitingPage {
         $opt_ips = get_option($this->opt_id . '-authorized-ips');
         echo '<p><label for="' . $this->opt_id . '-authorized-ips">' . __('Authorize these IPs:', $this->options['id']) . '</label><br />' . '<input type="text" id="' . $this->opt_id . '-authorized-ips" name="' . $this->opt_id . '-authorized-ips" value="' . esc_attr($opt_ips) . '" />' . '</p>';
 
+        $opt_content = get_option($this->opt_id . '-page-content');
+        echo '<p><label for="' . $this->opt_id . '-page-content">' . __('Page content:', $this->options['id']) . '</label><br />' . '<textarea id="' . $this->opt_id . '-page-content" name="' . $this->opt_id . '-page-content">' . esc_html($opt_content) . '</textarea>' . '</p>';
+
         echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
         submit_button(__('Save', $this->options['id']));
+    }
+
+    function get_page_content() {
+        $opt_content = trim(get_option($this->opt_id . '-page-content'));
+        if (empty($opt_content)) {
+            return false;
+        }
+        return wpautop($opt_content);
     }
 
     function launch_maintenance() {
@@ -189,7 +211,7 @@ class WPUWaitingPage {
         );
 
         // Search in theme
-        $theme_dir = get_template_directory() . '/wpumaintenance';
+        $theme_dir = get_stylesheet_directory() . '/wpumaintenance';
         if (is_dir($theme_dir)) {
             $this->include_file_if_exists($theme_dir, $maintenanceFilenames);
         }
@@ -213,7 +235,4 @@ class WPUWaitingPage {
     }
 }
 
-add_action('init', 'init_wpuwaitingpage');
-function init_wpuwaitingpage() {
-    $WPUWaitingPage = new WPUWaitingPage();
-}
+$WPUWaitingPage = new WPUWaitingPage();
