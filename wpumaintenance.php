@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.6
+Version: 0.7
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -34,17 +34,29 @@ class WPUWaitingPage {
         $this->options['plugin_menuname'] = __('Maintenance mode', $this->options['id']);
         $this->opt_id = $this->options['opt_id'];
 
+        /* Admin bar */
+        add_action('admin_bar_menu', array(&$this,
+            'add_toolbar_menu_items'
+        ) , 100);
+
         if (is_admin()) {
+            add_action('admin_head', array(&$this,
+                'add_toolbar_menu_items__class'
+            ) , 100);
+
             add_action('admin_menu', array(&$this,
                 'set_admin_page'
             ));
-            add_action('admin_bar_menu', array(&$this,
-                'add_toolbar_menu_items'
-            ) , 100);
+
             add_action('admin_init', array(&$this,
                 'content_admin_page_postAction'
             ));
             return;
+        }
+        else {
+            add_action('wp_head', array(&$this,
+                'add_toolbar_menu_items__class'
+            ) , 100);
         }
 
         if ($this->has_maintenance()) {
@@ -132,7 +144,7 @@ class WPUWaitingPage {
     function add_toolbar_menu_items($admin_bar) {
         $opt = get_option($this->opt_id);
 
-        $admin_bar->add_menu(array(
+        $admin_bar->add_node(array(
             'id' => $this->opt_id . 'menubar-link',
             'title' => $this->options['plugin_menuname'] . ' : ' . ($opt == '0' ? __('Off', $this->options['id']) : __('On', $this->options['id'])) ,
             'href' => admin_url($this->options['plugin_menutype'] . '?page=' . $this->options['plugin_basename']) ,
@@ -140,6 +152,15 @@ class WPUWaitingPage {
                 'title' => $this->options['plugin_publicname'],
             ) ,
         ));
+    }
+
+    function add_toolbar_menu_items__class() {
+        $opt = get_option($this->opt_id);
+        if ($opt == '1' && is_admin_bar_showing()) {
+            echo '<style>';
+            echo 'li#wp-admin-bar-' . $this->opt_id . 'menubar-link{background-color:#006600!important;}';
+            echo '</style>';
+        }
     }
 
     function set_admin_page() {
