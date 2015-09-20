@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Maintenance page\n"
-"POT-Creation-Date: 2015-09-12 18:46+0200\n"
+"POT-Creation-Date: 2015-09-20 22:48+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -24,34 +24,45 @@ msgstr "%s est en mode maintenance."
 msgid "Maintenance mode"
 msgstr "Mode maintenance"
 
-#: .././wpumaintenance.php:137
+#: .././wpumaintenance.php:152
 msgid "Off"
 msgstr "Désactivé"
 
-#: .././wpumaintenance.php:137
+#: .././wpumaintenance.php:152
 msgid "On"
 msgstr "Activé"
 
-#: .././wpumaintenance.php:180
-msgid "Activate maintenance mode : "
+#: .././wpumaintenance.php:196
+msgid "Enable maintenance mode : "
 msgstr "Activer le mode maintenance : "
 
-#: .././wpumaintenance.php:182
-msgid "No"
-msgstr "Non"
+#: .././wpumaintenance.php:197
+msgid "Disable for logged-in users:"
+msgstr "Désactiver pour les utilisateurs connectés :"
 
-#: .././wpumaintenance.php:183
-msgid "Yes"
-msgstr "Oui"
-
-#: .././wpumaintenance.php:187
+#: .././wpumaintenance.php:198
 msgid "Authorize these IPs:"
 msgstr "Autoriser ces IPs :"
 
-#: .././wpumaintenance.php:190
+#: .././wpumaintenance.php:199
 msgid "Page content:"
 msgstr "Contenu de la page :"
 
-#: .././wpumaintenance.php:193
+#: .././wpumaintenance.php:202
 msgid "Save"
 msgstr "Enregistrer"
+
+#: .././wpumaintenance.php:207
+msgid "Preview"
+msgstr "Aperçu"
+
+#: .././wpumaintenance.php:262
+msgid "No"
+msgstr "Non"
+
+#: .././wpumaintenance.php:263
+msgid "Yes"
+msgstr "Oui"
+
+#~ msgid "Activate maintenance mode : "
+#~ msgstr "Activer le mode maintenance : "

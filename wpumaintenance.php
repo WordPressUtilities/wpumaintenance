@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.7
+Version: 0.8
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -58,8 +58,7 @@ class WPUWaitingPage {
                 'add_toolbar_menu_items__class'
             ) , 100);
         }
-
-        if ($this->has_maintenance()) {
+        if ($this->has_maintenance() || (is_user_logged_in() && isset($_POST['demo-wpu-maintenance']))) {
             $this->launch_maintenance();
         }
     }
@@ -74,8 +73,9 @@ class WPUWaitingPage {
             return false;
         }
 
-        // Dont if user is logged in
-        if (is_user_logged_in()) {
+        // Dont launch if user is logged in
+        $disable_loggedin = get_option($this->opt_id . '-disable-loggedin');
+        if ($disable_loggedin != '1' && is_user_logged_in()) {
             return false;
         }
 
@@ -91,10 +91,13 @@ class WPUWaitingPage {
 
         // Check authorized ips
         $opt_ips = get_option($this->opt_id . '-authorized-ips');
+        $opt_ips = str_replace(' ', '', $opt_ips);
         $opt_ips = str_replace(array(
-            ' '
-        ) , '', $opt_ips);
-        $authorized_ips = explode(',', $opt_ips);
+            ';',
+            ',',
+            "\n"
+        ) , '###', $opt_ips);
+        $authorized_ips = explode('###', $opt_ips);
 
         // If no IPs are authorized : maintenance
         if (empty($authorized_ips) || $authorized_ips[0] == '') {
@@ -178,18 +181,10 @@ class WPUWaitingPage {
             return;
         }
 
-        if (isset($_POST[$this->opt_id]) && in_array($_POST[$this->opt_id], array(
-            '0',
-            '1'
-        ))) {
-            update_option($this->opt_id, $_POST[$this->opt_id]);
-        }
-        if (isset($_POST[$this->opt_id . '-authorized-ips'])) {
-            update_option($this->opt_id . '-authorized-ips', $_POST[$this->opt_id . '-authorized-ips']);
-        }
-        if (isset($_POST[$this->opt_id . '-page-content'])) {
-            update_option($this->opt_id . '-page-content', $_POST[$this->opt_id . '-page-content']);
-        }
+        $this->update_option_from($_POST, $this->opt_id, 'select');
+        $this->update_option_from($_POST, $this->opt_id . '-disable-loggedin', 'select');
+        $this->update_option_from($_POST, $this->opt_id . '-authorized-ips');
+        $this->update_option_from($_POST, $this->opt_id . '-page-content');
     }
 
     function content_admin_page() {
@@ -198,20 +193,19 @@ class WPUWaitingPage {
         echo '<h1>' . $this->options['plugin_menuname'] . '</h1>';
         echo '<form action="" method="post">';
 
-        echo '<p><label for="' . $this->opt_id . '">' . __('Activate maintenance mode : ', $this->options['id']) . '</label><br />';
-        echo '<select name="' . $this->opt_id . '" id="' . $this->opt_id . '">
-    <option ' . selected($opt, '0', false) . ' value="0">' . __('No', $this->options['id']) . '</option>
-    <option ' . selected($opt, '1', false) . ' value="1">' . __('Yes', $this->options['id']) . '</option>
-</select></p>';
-
-        $opt_ips = get_option($this->opt_id . '-authorized-ips');
-        echo '<p><label for="' . $this->opt_id . '-authorized-ips">' . __('Authorize these IPs:', $this->options['id']) . '</label><br />' . '<input type="text" id="' . $this->opt_id . '-authorized-ips" name="' . $this->opt_id . '-authorized-ips" value="' . esc_attr($opt_ips) . '" />' . '</p>';
-
-        $opt_content = get_option($this->opt_id . '-page-content');
-        echo '<p><label for="' . $this->opt_id . '-page-content">' . __('Page content:', $this->options['id']) . '</label><br />' . '<textarea id="' . $this->opt_id . '-page-content" name="' . $this->opt_id . '-page-content">' . esc_html($opt_content) . '</textarea>' . '</p>';
+        echo $this->get_field($this->opt_id, __('Enable maintenance mode : ', $this->options['id']) , 'select');
+        echo $this->get_field($this->opt_id . '-disable-loggedin', __('Disable for logged-in users:', $this->options['id']) , 'select');
+        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', $this->options['id']));
+        echo $this->get_field($this->opt_id . '-page-content', __('Page content:', $this->options['id']) , 'textarea');
 
         echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
         submit_button(__('Save', $this->options['id']));
+        echo '</form>';
+        echo '<hr />';
+        echo '<form target="_blank" action="' . get_page_link() . '" method="post">';
+        echo '<input type="hidden" name="demo-wpu-maintenance" value="1" />';
+        submit_button(__('Preview', $this->options['id']) , 'secondary');
+        echo '</form>';
     }
 
     function get_page_content() {
@@ -252,6 +246,48 @@ class WPUWaitingPage {
                 include $filepath;
                 die;
             }
+        }
+    }
+
+    /* ----------------------------------------------------------
+      Options
+    ---------------------------------------------------------- */
+
+    function get_field($id, $label = '', $type = false) {
+        $opt_content = get_option($id);
+        $return = '<p><label for="' . $id . '">' . $label . '</label><br />';
+        switch ($type) {
+            case 'select':
+                $return.= '<select name="' . $id . '" id="' . $id . '">
+                <option ' . selected($opt_content, '0', false) . ' value="0">' . __('No', $this->options['id']) . '</option>
+                <option ' . selected($opt_content, '1', false) . ' value="1">' . __('Yes', $this->options['id']) . '</option>
+            </select>';
+            break;
+            case 'textarea':
+                $return.= '<textarea id="' . $id . '" name="' . $id . '">' . esc_html($opt_content) . '</textarea>';
+            break;
+            default:
+                $return.= '<input type="text" id="' . $id . '" name="' . $id . '" value="' . esc_attr($opt_content) . '" />';
+        }
+        $return.= '</p>';
+        return $return;
+    }
+
+    function update_option_from($from, $id, $type = false) {
+        $select_values = array(
+            '0',
+            '1'
+        );
+        switch ($type) {
+            case 'select':
+                if (isset($from[$id]) && in_array($from[$id], $select_values)) {
+                    update_option($id, $from[$id]);
+                }
+            break;
+            default:
+                if (isset($from[$id])) {
+                    update_option($id, $from[$id]);
+                }
         }
     }
 }
