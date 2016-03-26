@@ -1,12 +1,4 @@
-<?php
-global $WPUWaitingPage;
-/* Page title */
-$page_title = apply_filters('wpumaintenance_pagetitle', get_bloginfo('name'));
-/* Default content */
-$default_content = '<h1>' . $page_title . '</h1>';
-$default_sentence = $WPUWaitingPage->get_page_content();
-$default_content.= ($default_sentence == false) ? '<p>' . sprintf(__('%s is in maintenance mode.', 'wpumaintenance') , '<strong>' . get_bloginfo('name') . '</strong>') . '</p>' : $default_sentence;
-?><!DOCTYPE HTML>
+<!DOCTYPE HTML>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="UTF-8" />
