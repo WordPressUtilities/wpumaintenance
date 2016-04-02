@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.9
+Version: 0.9.1
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -201,7 +201,7 @@ class WPUWaitingPage {
         submit_button(__('Save', $this->options['id']));
         echo '</form>';
         echo '<hr />';
-        echo '<form target="_blank" action="' . get_page_link() . '" method="post">';
+        echo '<form target="_blank" action="' . get_home_url() . '" method="post">';
         echo '<input type="hidden" name="demo-wpu-maintenance" value="1" />';
         submit_button(__('Preview', $this->options['id']), 'secondary');
         echo '</form>';
