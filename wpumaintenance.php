@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.9.1
+Version: 0.9.2
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -72,18 +72,23 @@ class WPUWaitingPage {
             return false;
         }
 
-        // Dont launch if user is logged in
+        // Don't launch if CLI
+        if (function_exists('php_sapi_name') && php_sapi_name() == 'cli') {
+            return false;
+        }
+
+        // Don't launch if user is logged in
         $disable_loggedin = get_option($this->opt_id . '-disable-loggedin');
         if ($disable_loggedin != '1' && is_user_logged_in()) {
             return false;
         }
 
-        // Dont launch if in admin
+        // Don't launch if in admin
         if (is_admin()) {
             return false;
         }
 
-        // Dont launch if login page
+        // Don't launch if login page
         if ($pagenow == 'wp-login.php') {
             return false;
         }
@@ -194,7 +199,7 @@ class WPUWaitingPage {
 
         echo $this->get_field($this->opt_id, __('Enable maintenance mode : ', $this->options['id']), 'select');
         echo $this->get_field($this->opt_id . '-disable-loggedin', __('Disable for logged-in users:', $this->options['id']), 'select');
-        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', $this->options['id']));
+        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', $this->options['id']), 'textarea');
         echo $this->get_field($this->opt_id . '-page-content', __('Page content:', $this->options['id']), 'textarea');
 
         echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
