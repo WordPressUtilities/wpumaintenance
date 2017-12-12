@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.9.2
+Version: 0.10.0
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -24,20 +24,25 @@ class WPUWaitingPage {
         $this->options = array(
             'id' => 'wpumaintenance',
             'opt_id' => 'wpumaintenance_has_maintenance',
+            'plugin_minlevel' => 'manage_options',
             'plugin_publicname' => 'WPU Maintenance',
             'plugin_menutype' => 'options-general.php',
             'plugin_basename' => 'wpumaintenance'
         );
 
         load_plugin_textdomain($this->options['id'], false, dirname(plugin_basename(__FILE__)) . '/lang/');
+        $this->options['plugin_menuname'] = __('Maintenance mode', 'wpumaintenance');
 
-        $this->options['plugin_menuname'] = __('Maintenance mode', $this->options['id']);
+        $this->options = apply_filters('wpumaintenance_options', $this->options);
+
         $this->opt_id = $this->options['opt_id'];
 
         /* Admin bar */
-        add_action('admin_bar_menu', array(&$this,
-            'add_toolbar_menu_items'
-        ), 100);
+        if (current_user_can($this->options['plugin_minlevel'])) {
+            add_action('admin_bar_menu', array(&$this,
+                'add_toolbar_menu_items'
+            ), 100);
+        }
 
         if (is_admin()) {
             add_action('admin_head', array(&$this,
@@ -153,7 +158,7 @@ class WPUWaitingPage {
 
         $admin_bar->add_node(array(
             'id' => $this->opt_id . 'menubar-link',
-            'title' => $this->options['plugin_menuname'] . ' : ' . ($opt == '0' ? __('Off', $this->options['id']) : __('On', $this->options['id'])),
+            'title' => $this->options['plugin_menuname'] . ' : ' . ($opt == '0' ? __('Off', 'wpumaintenance') : __('On', 'wpumaintenance')),
             'href' => admin_url($this->options['plugin_menutype'] . '?page=' . $this->options['plugin_basename']),
             'meta' => array(
                 'title' => $this->options['plugin_publicname']
@@ -171,7 +176,7 @@ class WPUWaitingPage {
     }
 
     public function set_admin_page() {
-        add_submenu_page($this->options['plugin_menutype'], $this->options['plugin_publicname'], $this->options['plugin_menuname'], 'manage_options', $this->options['plugin_basename'], array(&$this,
+        add_submenu_page($this->options['plugin_menutype'], $this->options['plugin_publicname'], $this->options['plugin_menuname'], $this->options['plugin_minlevel'], $this->options['plugin_basename'], array(&$this,
             'content_admin_page'
         ));
     }
@@ -197,18 +202,18 @@ class WPUWaitingPage {
         echo '<h1>' . $this->options['plugin_menuname'] . '</h1>';
         echo '<form action="" method="post">';
 
-        echo $this->get_field($this->opt_id, __('Enable maintenance mode : ', $this->options['id']), 'select');
-        echo $this->get_field($this->opt_id . '-disable-loggedin', __('Disable for logged-in users:', $this->options['id']), 'select');
-        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', $this->options['id']), 'textarea');
-        echo $this->get_field($this->opt_id . '-page-content', __('Page content:', $this->options['id']), 'textarea');
+        echo $this->get_field($this->opt_id, __('Enable maintenance mode : ', 'wpumaintenance'), 'select');
+        echo $this->get_field($this->opt_id . '-disable-loggedin', __('Disable for logged-in users:', 'wpumaintenance'), 'select');
+        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', 'wpumaintenance'), 'textarea');
+        echo $this->get_field($this->opt_id . '-page-content', __('Page content:', 'wpumaintenance'), 'textarea');
 
         echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
-        submit_button(__('Save', $this->options['id']));
+        submit_button(__('Save', 'wpumaintenance'));
         echo '</form>';
         echo '<hr />';
         echo '<form target="_blank" action="' . get_home_url() . '" method="post">';
         echo '<input type="hidden" name="demo-wpu-maintenance" value="1" />';
-        submit_button(__('Preview', $this->options['id']), 'secondary');
+        submit_button(__('Preview', 'wpumaintenance'), 'secondary');
         echo '</form>';
     }
 
@@ -282,8 +287,8 @@ class WPUWaitingPage {
         switch ($type) {
         case 'select':
             $return .= '<select name="' . $id . '" id="' . $id . '">
-                <option ' . selected($opt_content, '0', false) . ' value="0">' . __('No', $this->options['id']) . '</option>
-                <option ' . selected($opt_content, '1', false) . ' value="1">' . __('Yes', $this->options['id']) . '</option>
+                <option ' . selected($opt_content, '0', false) . ' value="0">' . __('No', 'wpumaintenance') . '</option>
+                <option ' . selected($opt_content, '1', false) . ' value="1">' . __('Yes', 'wpumaintenance') . '</option>
             </select>';
             break;
         case 'textarea':
