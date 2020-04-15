@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance page
 Description: Adds a maintenance page for non logged-in users
-Version: 0.10.0
+Version: 1.0.0
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -13,13 +13,19 @@ Contributors: @ScreenFeedFr
 
 class WPUWaitingPage {
 
+    private $setting_values = array();
+    private $plugin_version = '1.0.0';
+
     public function __construct() {
+        add_action('plugins_loaded', array(&$this,
+            'plugins_loaded'
+        ), 99);
         add_action('init', array(&$this,
             'init'
         ), 99);
     }
 
-    public function init() {
+    public function plugins_loaded() {
 
         $this->options = array(
             'id' => 'wpumaintenance',
@@ -35,7 +41,53 @@ class WPUWaitingPage {
 
         $this->options = apply_filters('wpumaintenance_options', $this->options);
 
-        $this->opt_id = $this->options['opt_id'];
+        $this->settings_details = array(
+            # Admin page
+            'create_page' => true,
+            'plugin_basename' => plugin_basename(__FILE__),
+            # Default
+            'plugin_id' => $this->options['id'],
+            'plugin_name' => $this->options['plugin_publicname'],
+            'option_id' => 'wpumaintenance_options',
+            'sections' => array(
+                'settings' => array(
+                    'name' => __('Settings', 'wpumaintenance')
+                )
+            )
+        );
+        $this->settings = array(
+            'enabled' => array(
+                'type' => 'checkbox',
+                'label' => __('Enable', 'wpumaintenance'),
+                'label_check' => __('Enable maintenance mode', 'wpumaintenance')
+            ),
+            'disabled_users' => array(
+                'type' => 'checkbox',
+                'label' => __('Disable for users', 'wpumaintenance'),
+                'label_check' => __('Disable maintenance mode for logged-in users', 'wpumaintenance')
+            ),
+            'authorized_ips' => array(
+                'label' => __('Authorize these IPs', 'wpumaintenance'),
+                'type' => 'textarea'
+            ),
+            'page_content' => array(
+                'label' => __('Page content', 'wpumaintenance'),
+                'type' => 'textarea'
+            )
+        );
+        include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
+        $settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
+        $this->setting_values = $settings_obj->get_settings();
+
+        /* Auto-update */
+        include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+        $this->settings_update = new \wpumaintenance\WPUBaseUpdate(
+            'WordPressUtilities',
+            'wpumaintenance',
+            $this->plugin_version);
+    }
+
+    public function init() {
 
         /* Admin bar */
         if (current_user_can($this->options['plugin_minlevel'])) {
@@ -48,20 +100,11 @@ class WPUWaitingPage {
             add_action('admin_head', array(&$this,
                 'add_toolbar_menu_items__class'
             ), 100);
-
-            add_action('admin_menu', array(&$this,
-                'set_admin_page'
-            ));
-
-            add_action('admin_init', array(&$this,
-                'content_admin_page_postAction'
-            ));
             return;
-        } else {
-            add_action('wp_head', array(&$this,
-                'add_toolbar_menu_items__class'
-            ), 100);
         }
+        add_action('wp_head', array(&$this,
+            'add_toolbar_menu_items__class'
+        ), 100);
         if ($this->has_maintenance() || (is_user_logged_in() && isset($_POST['demo-wpu-maintenance']))) {
             $this->launch_maintenance();
         }
@@ -73,7 +116,7 @@ class WPUWaitingPage {
      */
     public function has_maintenance() {
         global $pagenow;
-        if (get_option($this->opt_id) != '1') {
+        if ($this->setting_values['enabled'] != '1') {
             return false;
         }
 
@@ -83,8 +126,8 @@ class WPUWaitingPage {
         }
 
         // Don't launch if user is logged in
-        $disable_loggedin = get_option($this->opt_id . '-disable-loggedin');
-        if ($disable_loggedin != '1' && is_user_logged_in()) {
+        $disable_loggedin = $this->setting_values['enabled_users'];
+        if ($disable_loggedin = '1' && is_user_logged_in()) {
             return false;
         }
 
@@ -99,12 +142,13 @@ class WPUWaitingPage {
         }
 
         // Check authorized ips
-        $opt_ips = get_option($this->opt_id . '-authorized-ips');
+        $opt_ips = $this->setting_values['authorized_ips'];
         $opt_ips = str_replace(' ', '', $opt_ips);
         $opt_ips = str_replace(array(
             ';',
             ',',
-            "\n"
+            "\n",
+            "\r"
         ), '###', $opt_ips);
         $authorized_ips = explode('###', $opt_ips);
 
@@ -154,10 +198,10 @@ class WPUWaitingPage {
      * @param unknown $admin_bar
      */
     public function add_toolbar_menu_items($admin_bar) {
-        $opt = get_option($this->opt_id);
+        $opt = $this->setting_values['enabled'];
 
         $admin_bar->add_node(array(
-            'id' => $this->opt_id . 'menubar-link',
+            'id' => $this->options['opt_id'] . 'menubar-link',
             'title' => $this->options['plugin_menuname'] . ' : ' . ($opt == '0' ? __('Off', 'wpumaintenance') : __('On', 'wpumaintenance')),
             'href' => admin_url($this->options['plugin_menutype'] . '?page=' . $this->options['plugin_basename']),
             'meta' => array(
@@ -167,58 +211,16 @@ class WPUWaitingPage {
     }
 
     public function add_toolbar_menu_items__class() {
-        $opt = get_option($this->opt_id);
+        $opt = $this->setting_values['enabled'];
         if ($opt == '1' && is_admin_bar_showing()) {
             echo '<style>';
-            echo 'li#wp-admin-bar-' . $this->opt_id . 'menubar-link{background-color:#006600!important;}';
+            echo 'li#wp-admin-bar-' . $this->options['opt_id'] . 'menubar-link{background-color:#006600!important;}';
             echo '</style>';
         }
     }
 
-    public function set_admin_page() {
-        add_submenu_page($this->options['plugin_menutype'], $this->options['plugin_publicname'], $this->options['plugin_menuname'], $this->options['plugin_minlevel'], $this->options['plugin_basename'], array(&$this,
-            'content_admin_page'
-        ));
-    }
-
-    public function content_admin_page_postAction() {
-        if (empty($_POST)) {
-            return;
-        }
-
-        if (!isset($_POST[$this->opt_id . '-noncefield']) || !wp_verify_nonce($_POST[$this->opt_id . '-noncefield'], $this->opt_id . '-nonceaction')) {
-            return;
-        }
-
-        $this->update_option_from($_POST, $this->opt_id, 'select');
-        $this->update_option_from($_POST, $this->opt_id . '-disable-loggedin', 'select');
-        $this->update_option_from($_POST, $this->opt_id . '-authorized-ips');
-        $this->update_option_from($_POST, $this->opt_id . '-page-content');
-    }
-
-    public function content_admin_page() {
-
-        $opt = get_option($this->opt_id);
-        echo '<h1>' . $this->options['plugin_menuname'] . '</h1>';
-        echo '<form action="" method="post">';
-
-        echo $this->get_field($this->opt_id, __('Enable maintenance mode : ', 'wpumaintenance'), 'select');
-        echo $this->get_field($this->opt_id . '-disable-loggedin', __('Disable for logged-in users:', 'wpumaintenance'), 'select');
-        echo $this->get_field($this->opt_id . '-authorized-ips', __('Authorize these IPs:', 'wpumaintenance'), 'textarea');
-        echo $this->get_field($this->opt_id . '-page-content', __('Page content:', 'wpumaintenance'), 'textarea');
-
-        echo wp_nonce_field($this->opt_id . '-nonceaction', $this->opt_id . '-noncefield', 1, 0);
-        submit_button(__('Save', 'wpumaintenance'));
-        echo '</form>';
-        echo '<hr />';
-        echo '<form target="_blank" action="' . get_home_url() . '" method="post">';
-        echo '<input type="hidden" name="demo-wpu-maintenance" value="1" />';
-        submit_button(__('Preview', 'wpumaintenance'), 'secondary');
-        echo '</form>';
-    }
-
     public function get_page_content() {
-        $opt_content = trim(get_option($this->opt_id . '-page-content'));
+        $opt_content = trim($this->setting_values['page_content']);
         if (empty($opt_content)) {
             $opt_content = sprintf(__('%s is in maintenance mode.', 'wpumaintenance'), '<strong>' . get_bloginfo('name') . '</strong>');
         }
@@ -277,47 +279,6 @@ class WPUWaitingPage {
         }
     }
 
-    /* ----------------------------------------------------------
-      Options
-    ---------------------------------------------------------- */
-
-    public function get_field($id, $label = '', $type = false) {
-        $opt_content = get_option($id);
-        $return = '<p><label for="' . $id . '">' . $label . '</label><br />';
-        switch ($type) {
-        case 'select':
-            $return .= '<select name="' . $id . '" id="' . $id . '">
-                <option ' . selected($opt_content, '0', false) . ' value="0">' . __('No', 'wpumaintenance') . '</option>
-                <option ' . selected($opt_content, '1', false) . ' value="1">' . __('Yes', 'wpumaintenance') . '</option>
-            </select>';
-            break;
-        case 'textarea':
-            $return .= '<textarea id="' . $id . '" name="' . $id . '">' . esc_html($opt_content) . '</textarea>';
-            break;
-        default:
-            $return .= '<input type="text" id="' . $id . '" name="' . $id . '" value="' . esc_attr($opt_content) . '" />';
-        }
-        $return .= '</p>';
-        return $return;
-    }
-
-    public function update_option_from($from, $id, $type = false) {
-        $select_values = array(
-            '0',
-            '1'
-        );
-        switch ($type) {
-        case 'select':
-            if (isset($from[$id]) && in_array($from[$id], $select_values)) {
-                update_option($id, $from[$id]);
-            }
-            break;
-        default:
-            if (isset($from[$id])) {
-                update_option($id, $from[$id]);
-            }
-        }
-    }
 }
 
 $WPUWaitingPage = new WPUWaitingPage();
