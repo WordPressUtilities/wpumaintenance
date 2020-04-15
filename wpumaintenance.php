@@ -1,9 +1,9 @@
 <?php
 
 /*
-Plugin Name: WPU Maintenance page
+Plugin Name: WPU Maintenance Page
 Description: Adds a maintenance page for non logged-in users
-Version: 1.0.0
+Version: 1.0.1
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -11,10 +11,10 @@ License URI: http://opensource.org/licenses/MIT
 Contributors: @ScreenFeedFr
 */
 
-class WPUWaitingPage {
+class WPUMaintenance {
 
     private $setting_values = array();
-    private $plugin_version = '1.0.0';
+    private $plugin_version = '1.0.1';
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this,
@@ -57,27 +57,38 @@ class WPUWaitingPage {
         );
         $this->settings = array(
             'enabled' => array(
+                'default' => '1',
                 'type' => 'checkbox',
                 'label' => __('Enable', 'wpumaintenance'),
                 'label_check' => __('Enable maintenance mode', 'wpumaintenance')
             ),
             'disabled_users' => array(
+                'default' => '1',
                 'type' => 'checkbox',
                 'label' => __('Disable for users', 'wpumaintenance'),
                 'label_check' => __('Disable maintenance mode for logged-in users', 'wpumaintenance')
             ),
             'authorized_ips' => array(
                 'label' => __('Authorize these IPs', 'wpumaintenance'),
+                'default' => '1',
                 'type' => 'textarea'
             ),
             'page_content' => array(
                 'label' => __('Page content', 'wpumaintenance'),
+                'default' => '1',
                 'type' => 'textarea'
             )
         );
         include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
         $settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
-        $this->setting_values = $settings_obj->get_settings();
+
+        $this->settings_values = $settings_obj->get_settings();
+        foreach($this->settings as $setting_id => $setting){
+            if(!isset($this->settings_values[$setting_id])){
+                $this->settings_values[$setting_id] = $setting['default'];
+            }
+        }
+        $this->settings_values = apply_filters('wpumaintenance__settings_values', $this->settings_values);
 
         /* Auto-update */
         include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
@@ -116,7 +127,7 @@ class WPUWaitingPage {
      */
     public function has_maintenance() {
         global $pagenow;
-        if ($this->setting_values['enabled'] != '1') {
+        if ($this->settings_values['enabled'] != '1') {
             return false;
         }
 
@@ -126,8 +137,8 @@ class WPUWaitingPage {
         }
 
         // Don't launch if user is logged in
-        $disable_loggedin = $this->setting_values['enabled_users'];
-        if ($disable_loggedin = '1' && is_user_logged_in()) {
+        $disable_loggedin = $this->settings_values['disabled_users'];
+        if ($disable_loggedin == '1' && is_user_logged_in()) {
             return false;
         }
 
@@ -142,7 +153,7 @@ class WPUWaitingPage {
         }
 
         // Check authorized ips
-        $opt_ips = $this->setting_values['authorized_ips'];
+        $opt_ips = $this->settings_values['authorized_ips'];
         $opt_ips = str_replace(' ', '', $opt_ips);
         $opt_ips = str_replace(array(
             ';',
@@ -198,7 +209,7 @@ class WPUWaitingPage {
      * @param unknown $admin_bar
      */
     public function add_toolbar_menu_items($admin_bar) {
-        $opt = $this->setting_values['enabled'];
+        $opt = $this->settings_values['enabled'];
 
         $admin_bar->add_node(array(
             'id' => $this->options['opt_id'] . 'menubar-link',
@@ -211,7 +222,7 @@ class WPUWaitingPage {
     }
 
     public function add_toolbar_menu_items__class() {
-        $opt = $this->setting_values['enabled'];
+        $opt = $this->settings_values['enabled'];
         if ($opt == '1' && is_admin_bar_showing()) {
             echo '<style>';
             echo 'li#wp-admin-bar-' . $this->options['opt_id'] . 'menubar-link{background-color:#006600!important;}';
@@ -220,7 +231,7 @@ class WPUWaitingPage {
     }
 
     public function get_page_content() {
-        $opt_content = trim($this->setting_values['page_content']);
+        $opt_content = trim($this->settings_values['page_content']);
         if (empty($opt_content)) {
             $opt_content = sprintf(__('%s is in maintenance mode.', 'wpumaintenance'), '<strong>' . get_bloginfo('name') . '</strong>');
         }
@@ -281,4 +292,4 @@ class WPUWaitingPage {
 
 }
 
-$WPUWaitingPage = new WPUWaitingPage();
+$WPUMaintenance = new WPUMaintenance();
