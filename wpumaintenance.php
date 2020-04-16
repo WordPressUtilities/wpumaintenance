@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance Page
 Description: Adds a maintenance page for non logged-in users
-Version: 1.0.1
+Version: 1.0.2
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -14,7 +14,7 @@ Contributors: @ScreenFeedFr
 class WPUMaintenance {
 
     private $setting_values = array();
-    private $plugin_version = '1.0.1';
+    private $plugin_version = '1.0.2';
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this,
@@ -22,6 +22,9 @@ class WPUMaintenance {
         ), 99);
         add_action('init', array(&$this,
             'init'
+        ), 99);
+        add_action('template_redirect', array(&$this,
+            'template_redirect'
         ), 99);
     }
 
@@ -57,7 +60,7 @@ class WPUMaintenance {
         );
         $this->settings = array(
             'enabled' => array(
-                'default' => '1',
+                'default' => '0',
                 'type' => 'checkbox',
                 'label' => __('Enable', 'wpumaintenance'),
                 'label_check' => __('Enable maintenance mode', 'wpumaintenance')
@@ -70,12 +73,12 @@ class WPUMaintenance {
             ),
             'authorized_ips' => array(
                 'label' => __('Authorize these IPs', 'wpumaintenance'),
-                'default' => '1',
+                'default' => '',
                 'type' => 'textarea'
             ),
             'page_content' => array(
                 'label' => __('Page content', 'wpumaintenance'),
-                'default' => '1',
+                'default' => '',
                 'type' => 'textarea'
             )
         );
@@ -83,8 +86,8 @@ class WPUMaintenance {
         $settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
 
         $this->settings_values = $settings_obj->get_settings();
-        foreach($this->settings as $setting_id => $setting){
-            if(!isset($this->settings_values[$setting_id])){
+        foreach ($this->settings as $setting_id => $setting) {
+            if (!isset($this->settings_values[$setting_id])) {
                 $this->settings_values[$setting_id] = $setting['default'];
             }
         }
@@ -116,6 +119,9 @@ class WPUMaintenance {
         add_action('wp_head', array(&$this,
             'add_toolbar_menu_items__class'
         ), 100);
+    }
+
+    public function template_redirect() {
         if ($this->has_maintenance() || (is_user_logged_in() && isset($_POST['demo-wpu-maintenance']))) {
             $this->launch_maintenance();
         }
