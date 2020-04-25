@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance Page
 Description: Adds a maintenance page for non logged-in users
-Version: 1.0.2
+Version: 1.0.3
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -14,7 +14,7 @@ Contributors: @ScreenFeedFr
 class WPUMaintenance {
 
     private $setting_values = array();
-    private $plugin_version = '1.0.2';
+    private $plugin_version = '1.0.3';
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this,
@@ -43,6 +43,13 @@ class WPUMaintenance {
         $this->options['plugin_menuname'] = __('Maintenance mode', 'wpumaintenance');
 
         $this->options = apply_filters('wpumaintenance_options', $this->options);
+
+        $help_page_content = '';
+        $maintenance_template = $this->get_maintenance_template();
+        if ($maintenance_template) {
+            $maintenance_template = str_replace(ABSPATH, '', $maintenance_template);
+            $help_page_content = sprintf(__('This template is in use : %s', 'wpumaintenance'), $maintenance_template);
+        }
 
         $this->settings_details = array(
             # Admin page
@@ -79,7 +86,8 @@ class WPUMaintenance {
             'page_content' => array(
                 'label' => __('Page content', 'wpumaintenance'),
                 'default' => '',
-                'type' => 'textarea'
+                'type' => 'textarea',
+                'help' => $help_page_content
             )
         );
         include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
@@ -246,34 +254,28 @@ class WPUMaintenance {
 
     public function launch_maintenance() {
 
-        // Try to include a HTML file
-        $maintenanceFilenames = array(
-            'maintenance.php',
-            'maintenance.html',
-            'index.html'
-        );
-
-        // Search in theme
-        $theme_dir = get_stylesheet_directory() . '/wpumaintenance';
-        if (is_dir($theme_dir)) {
-            $this->include_file_if_exists($theme_dir, $maintenanceFilenames);
+        // Try to include a template file
+        $maintenance_template = $this->get_maintenance_template();
+        if ($maintenance_template) {
+            $this->header_503();
+            include $maintenance_template;
+            die;
         }
-
-        // Search in the root folder
-        $this->include_file_if_exists(ABSPATH, $maintenanceFilenames);
-
         // Or include the default maintenance page
 
         /* Page title */
         $page_title = apply_filters('wpumaintenance_pagetitle', get_bloginfo('name'));
+
         /* Default content */
         $default_content = '<h1>' . $page_title . '</h1>';
         $default_sentence = $this->get_page_content();
         $default_content .= $default_sentence;
+
         // Use WordPress handler if available
         if (function_exists('_default_wp_die_handler')) {
             _default_wp_die_handler($default_content, $page_title, array('response' => 503));
         }
+
         $this->header_503();
         include dirname(__FILE__) . '/includes/maintenance.php';
         die;
@@ -285,15 +287,32 @@ class WPUMaintenance {
         header('Retry-After: 300'); //300 seconds
     }
 
-    public function include_file_if_exists($dir, $filenames) {
-        foreach ($filenames as $filename) {
-            $filepath = $dir . '/' . $filename;
-            if (file_exists($filepath)) {
-                $this->header_503();
-                include $filepath;
-                die;
+    public function get_maintenance_template() {
+        $maintenanceFilenames = array(
+            'maintenance.php',
+            'maintenance.html',
+            'index.html'
+        );
+
+        // Search in root dir
+        $folders = array(ABSPATH);
+
+        // Add theme if available
+        $theme_dir = get_stylesheet_directory() . '/wpumaintenance';
+        if (is_dir($theme_dir)) {
+            $folders[] = $theme_dir;
+        }
+
+        foreach ($folders as $dir) {
+            foreach ($maintenanceFilenames as $filename) {
+                $filepath = $dir . '/' . $filename;
+                if (file_exists($filepath)) {
+                    return $filepath;
+                }
             }
         }
+
+        return false;
     }
 
 }

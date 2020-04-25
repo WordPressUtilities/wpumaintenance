@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Maintenance page\n"
-"POT-Creation-Date: 2020-04-16 22:39+0200\n"
+"POT-Creation-Date: 2020-04-25 18:19+0200\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -17,7 +17,7 @@ msgstr ""
 
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:127
 #: .././inc/WPUBaseSettings/WPUBaseSettings.php:456
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:463 .././wpumaintenance.php:57
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:463 .././wpumaintenance.php:64
 msgid "Settings"
 msgstr "Réglages"
 
@@ -45,39 +45,44 @@ msgstr "Enregistrer"
 msgid "Maintenance mode"
 msgstr "Mode maintenance"
 
-#: .././wpumaintenance.php:65
+#: .././wpumaintenance.php:51
+#, php-format
+msgid "This template is in use : %s"
+msgstr "Ce modèle est utilisé : %s"
+
+#: .././wpumaintenance.php:72
 msgid "Enable"
 msgstr "Activer"
 
-#: .././wpumaintenance.php:66
+#: .././wpumaintenance.php:73
 msgid "Enable maintenance mode"
 msgstr "Activer le mode maintenance"
 
-#: .././wpumaintenance.php:71
+#: .././wpumaintenance.php:78
 msgid "Disable for users"
 msgstr "Désactiver pour les utilisateurs"
 
-#: .././wpumaintenance.php:72
+#: .././wpumaintenance.php:79
 msgid "Disable maintenance mode for logged-in users"
 msgstr "Désactiver le mode maintenance pour les utilisateurs connectés"
 
-#: .././wpumaintenance.php:75
+#: .././wpumaintenance.php:82
 msgid "Authorize these IPs"
 msgstr "Autoriser ces IP"
 
-#: .././wpumaintenance.php:80
+#: .././wpumaintenance.php:87
 msgid "Page content"
 msgstr "Contenu de la page"
 
-#: .././wpumaintenance.php:222
+#: .././wpumaintenance.php:230
 msgid "Off"
 msgstr "Désactivé"
 
-#: .././wpumaintenance.php:222
+#: .././wpumaintenance.php:230
 msgid "On"
 msgstr "Activé"
 
-#: .././wpumaintenance.php:242
+#: .././wpumaintenance.php:250
 #, php-format
 msgid "%s is in maintenance mode."
 msgstr "%s est en mode maintenance."
