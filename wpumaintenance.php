@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance Page
 Description: Adds a maintenance page for non logged-in users
-Version: 1.0.3
+Version: 1.0.4
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -14,7 +14,7 @@ Contributors: @ScreenFeedFr
 class WPUMaintenance {
 
     private $setting_values = array();
-    private $plugin_version = '1.0.3';
+    private $plugin_version = '1.0.4';
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this,
@@ -142,6 +142,10 @@ class WPUMaintenance {
     public function has_maintenance() {
         global $pagenow;
         if ($this->settings_values['enabled'] != '1') {
+            return false;
+        }
+
+        if (defined('WPUMAINTENANCE_DISABLED') && WPUMAINTENANCE_DISABLED) {
             return false;
         }
 
