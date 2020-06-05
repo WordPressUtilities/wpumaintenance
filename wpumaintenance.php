@@ -3,7 +3,7 @@
 /*
 Plugin Name: WPU Maintenance Page
 Description: Adds a maintenance page for non logged-in users
-Version: 1.0.4
+Version: 1.1.0
 Author: Darklg
 Author URI: http://darklg.me/
 License: MIT License
@@ -14,7 +14,8 @@ Contributors: @ScreenFeedFr
 class WPUMaintenance {
 
     private $setting_values = array();
-    private $plugin_version = '1.0.4';
+    private $plugin_version = '1.1.0';
+    public $settings_obj = array();
 
     public function __construct() {
         add_action('plugins_loaded', array(&$this,
@@ -91,9 +92,8 @@ class WPUMaintenance {
             )
         );
         include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
-        $settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
-
-        $this->settings_values = $settings_obj->get_settings();
+        $this->settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
+        $this->settings_values = $this->settings_obj->get_settings();
         foreach ($this->settings as $setting_id => $setting) {
             if (!isset($this->settings_values[$setting_id])) {
                 $this->settings_values[$setting_id] = $setting['default'];
@@ -319,6 +319,45 @@ class WPUMaintenance {
         return false;
     }
 
+    public function enable_maintenance() {
+        $this->settings_obj->update_setting('enabled', '1');
+    }
+
+    public function disable_maintenance() {
+        $this->settings_obj->update_setting('enabled', '0');
+    }
+
 }
 
-$WPUMaintenance = new WPUMaintenance();
+if (defined('WP_CLI') && WP_CLI) {
+    WP_CLI::add_command('wpumaintenance', function ($args) {
+        if (!is_array($args) || empty($args)) {
+            return;
+        }
+        $WPUMaintenance = new WPUMaintenance();
+        $WPUMaintenance->plugins_loaded();
+        if ($args[0] == 'enable') {
+            $WPUMaintenance->enable_maintenance();
+            WP_CLI::success('Enabled');
+        }
+        if ($args[0] == 'disable') {
+            $WPUMaintenance->disable_maintenance();;
+            WP_CLI::success('Disabled');
+        }
+    }, array(
+        'shortdesc' => 'Enable or disable maintenance mode.',
+        'longdesc' =>   '## EXAMPLES' . "\n\n" . 'wp wpumaintenance enable'. "\n" . 'wp wpumaintenance disable',
+        'synopsis' => array(
+            array(
+                'type'        => 'positional',
+                'name'        => 'enable_or_disable',
+                'description' => 'Enable or disable maintenance mode.',
+                'optional'    => false,
+                'repeating'   => false,
+                'options'     => array( 'enable', 'disable' ),
+            )
+        ),
+    ));
+} else {
+    $WPUMaintenance = new WPUMaintenance();
+}
