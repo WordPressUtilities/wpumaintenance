@@ -1,7 +1,7 @@
 WPU Maintenance
 ==============
 
-Add [![PHP workflow](https://github.com/WordPressUtilities/wpumaintenance/actions/workflows/php.yml/badge.svg 'PHP workflow')](https://github.com/WordPressUtilities/wpumaintenance/actions) to your README.md
+[![PHP workflow](https://github.com/WordPressUtilities/wpumaintenance/actions/workflows/php.yml/badge.svg 'PHP workflow')](https://github.com/WordPressUtilities/wpumaintenance/actions)
 
 Adds a maintenance page for non logged-in users
 
