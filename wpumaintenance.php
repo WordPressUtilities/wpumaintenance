@@ -1,35 +1,61 @@
 <?php
+defined('ABSPATH') || die;
 
 /*
 Plugin Name: WPU Maintenance Page
-Description: Adds a maintenance page for non logged-in users
-Version: 1.1.0
+Description: Add a maintenance page for non logged-in users
+Version: 1.2.0
 Author: Darklg
-Author URI: http://darklg.me/
+Author URI: https://darklg.me/
+Text Domain: wpumaintenance
+Domain Path: /lang
+Requires at least: 6.2
+Requires PHP: 8.0
+Network: Optional
 License: MIT License
-License URI: http://opensource.org/licenses/MIT
+License URI: https://opensource.org/licenses/MIT
 Contributors: @ScreenFeedFr
 */
 
 class WPUMaintenance {
+    public $plugin_description;
+    public $options;
+    public $settings_details;
+    public $settings;
+    public $settings_values;
+    public $settings_update;
 
     private $setting_values = array();
-    private $plugin_version = '1.1.0';
+    private $plugin_version = '1.2.0';
     public $settings_obj = array();
 
     public function __construct() {
-        add_action('plugins_loaded', array(&$this,
-            'plugins_loaded'
-        ), 99);
+
+        add_action('init', array(&$this,
+            'load_translation'
+        ));
         add_action('init', array(&$this,
             'init'
+        ), 99);
+        add_action('init', array(&$this,
+            'init_maintenance'
         ), 99);
         add_action('template_redirect', array(&$this,
             'template_redirect'
         ), 99);
     }
 
-    public function plugins_loaded() {
+    public function load_translation() {
+        $lang_dir = dirname(plugin_basename(__FILE__)) . '/lang/';
+        if (strpos(__DIR__, 'mu-plugins') !== false) {
+            load_muplugin_textdomain('wpumaintenance', $lang_dir);
+        } else {
+            load_plugin_textdomain('wpumaintenance', false, $lang_dir);
+        }
+        $this->plugin_description = __('Add a maintenance page for non logged-in users', 'wpumaintenance');
+    }
+
+    public function init() {
 
         $this->options = array(
             'id' => 'wpumaintenance',
@@ -73,6 +99,12 @@ class WPUMaintenance {
                 'label' => __('Enable', 'wpumaintenance'),
                 'label_check' => __('Enable maintenance mode', 'wpumaintenance')
             ),
+            'disable_header_503' => array(
+                'default' => '0',
+                'type' => 'checkbox',
+                'label' => __('Disable 503', 'wpumaintenance'),
+                'label_check' => __('Do not send a 503 header', 'wpumaintenance')
+            ),
             'disabled_users' => array(
                 'default' => '1',
                 'type' => 'checkbox',
@@ -88,10 +120,11 @@ class WPUMaintenance {
                 'label' => __('Page content', 'wpumaintenance'),
                 'default' => '',
                 'type' => 'textarea',
+                'readonly' => $help_page_content ? '1' : '0',
                 'help' => $help_page_content
             )
         );
-        include dirname(__FILE__) . '/inc/WPUBaseSettings/WPUBaseSettings.php';
+        require_once __DIR__ . '/inc/WPUBaseSettings/WPUBaseSettings.php';
         $this->settings_obj = new \wpumaintenance\WPUBaseSettings($this->settings_details, $this->settings);
         $this->settings_values = $this->settings_obj->get_settings();
         foreach ($this->settings as $setting_id => $setting) {
@@ -102,14 +135,14 @@ class WPUMaintenance {
         $this->settings_values = apply_filters('wpumaintenance__settings_values', $this->settings_values);
 
         /* Auto-update */
-        include dirname(__FILE__) . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
+        require_once __DIR__ . '/inc/WPUBaseUpdate/WPUBaseUpdate.php';
         $this->settings_update = new \wpumaintenance\WPUBaseUpdate(
             'WordPressUtilities',
             'wpumaintenance',
             $this->plugin_version);
     }
 
-    public function init() {
+    public function init_maintenance() {
 
         /* Admin bar */
         if (current_user_can($this->options['plugin_minlevel'])) {
@@ -194,7 +227,7 @@ class WPUMaintenance {
      * Get IP Address
      *
      * @return  string $ip_address
-     * Src: http://stackoverflow.com/a/6718472
+     * Src: https://stackoverflow.com/a/6718472
      */
     public function get_ip() {
 
@@ -261,7 +294,7 @@ class WPUMaintenance {
         // Try to include a template file
         $maintenance_template = $this->get_maintenance_template();
         if ($maintenance_template) {
-            $this->header_503();
+            $this->maybe_header_503();
             include $maintenance_template;
             die;
         }
@@ -280,12 +313,15 @@ class WPUMaintenance {
             _default_wp_die_handler($default_content, $page_title, array('response' => 503));
         }
 
-        $this->header_503();
-        include dirname(__FILE__) . '/includes/maintenance.php';
+        $this->maybe_header_503();
+        require_once __DIR__ . '/includes/maintenance.php';
         die;
     }
 
-    public function header_503() {
+    public function maybe_header_503() {
+        if ($this->settings_values['disable_header_503'] == '1') {
+            return;
+        }
         header('HTTP/1.1 503 Service Temporarily Unavailable');
         header('Status: 503 Service Temporarily Unavailable');
         header('Retry-After: 300'); //300 seconds
@@ -341,22 +377,22 @@ if (defined('WP_CLI') && WP_CLI) {
             WP_CLI::success('Enabled');
         }
         if ($args[0] == 'disable') {
-            $WPUMaintenance->disable_maintenance();;
+            $WPUMaintenance->disable_maintenance();
             WP_CLI::success('Disabled');
         }
     }, array(
         'shortdesc' => 'Enable or disable maintenance mode.',
-        'longdesc' =>   '## EXAMPLES' . "\n\n" . 'wp wpumaintenance enable'. "\n" . 'wp wpumaintenance disable',
+        'longdesc' => '## EXAMPLES' . "\n\n" . 'wp wpumaintenance enable' . "\n" . 'wp wpumaintenance disable',
         'synopsis' => array(
             array(
-                'type'        => 'positional',
-                'name'        => 'enable_or_disable',
+                'type' => 'positional',
+                'name' => 'enable_or_disable',
                 'description' => 'Enable or disable maintenance mode.',
-                'optional'    => false,
-                'repeating'   => false,
-                'options'     => array( 'enable', 'disable' ),
+                'optional' => false,
+                'repeating' => false,
+                'options' => array('enable', 'disable')
             )
-        ),
+        )
     ));
 } else {
     $WPUMaintenance = new WPUMaintenance();

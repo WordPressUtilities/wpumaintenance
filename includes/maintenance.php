@@ -1,4 +1,4 @@
-<!DOCTYPE HTML>
+<?php defined('ABSPATH') || die; ?><!DOCTYPE HTML>
 <html <?php language_attributes(); ?>>
 <head>
     <meta charset="UTF-8" />

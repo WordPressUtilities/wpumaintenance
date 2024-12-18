@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WPU Maintenance page\n"
-"POT-Creation-Date: 2020-04-25 18:19+0200\n"
+"POT-Creation-Date: 2024-12-18 21:14+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Darklg <darklg.blog@gmail.com>\n"
 "Language-Team: \n"
@@ -9,80 +9,104 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 3.5\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-Basepath: .\n"
 "X-Poedit-KeywordsList: __;_e\n"
 "X-Poedit-SearchPath-0: ../.\n"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:127
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:456
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:463 .././wpumaintenance.php:64
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:132
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:674
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:681 .././wpumaintenance.php:90
 msgid "Settings"
 msgstr "Réglages"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:154
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:162
 msgid "No"
 msgstr "Non"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:154
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:162
 msgid "Yes"
 msgstr "Oui"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:279
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:208
+msgid "Check all"
+msgstr "Tout cocher"
+
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:209
+msgid "Uncheck all"
+msgstr "Tout décocher"
+
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:323
 msgid "Settings saved."
 msgstr "Paramètres sauvegardés."
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:317
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:383
 msgid "Upload New Media"
 msgstr "Ajouter un nouveau média"
 
-#: .././inc/WPUBaseSettings/WPUBaseSettings.php:478
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:578
+msgid "Language"
+msgstr "Langue"
+
+#: .././inc/WPUBaseSettings/WPUBaseSettings.php:696
 msgid "Save"
 msgstr "Enregistrer"
 
-#: .././wpumaintenance.php:43
+#: .././wpumaintenance.php:54
+msgid "Add a maintenance page for non logged-in users"
+msgstr "Ajoute une page de maintenance pour les utilisateurs non connectés"
+
+#: .././wpumaintenance.php:69
 msgid "Maintenance mode"
 msgstr "Mode maintenance"
 
-#: .././wpumaintenance.php:51
+#: .././wpumaintenance.php:77
 #, php-format
 msgid "This template is in use : %s"
 msgstr "Ce modèle est utilisé : %s"
 
-#: .././wpumaintenance.php:72
+#: .././wpumaintenance.php:98
 msgid "Enable"
 msgstr "Activer"
 
-#: .././wpumaintenance.php:73
+#: .././wpumaintenance.php:99
 msgid "Enable maintenance mode"
 msgstr "Activer le mode maintenance"
 
-#: .././wpumaintenance.php:78
+#: .././wpumaintenance.php:104
+msgid "Disable 503"
+msgstr "Désactiver 503"
+
+#: .././wpumaintenance.php:105
+msgid "Do not send a 503 header"
+msgstr "Ne pas envoyer d’en-tête 503"
+
+#: .././wpumaintenance.php:110
 msgid "Disable for users"
 msgstr "Désactiver pour les utilisateurs"
 
-#: .././wpumaintenance.php:79
+#: .././wpumaintenance.php:111
 msgid "Disable maintenance mode for logged-in users"
 msgstr "Désactiver le mode maintenance pour les utilisateurs connectés"
 
-#: .././wpumaintenance.php:82
+#: .././wpumaintenance.php:114
 msgid "Authorize these IPs"
 msgstr "Autoriser ces IP"
 
-#: .././wpumaintenance.php:87
+#: .././wpumaintenance.php:119
 msgid "Page content"
 msgstr "Contenu de la page"
 
-#: .././wpumaintenance.php:230
+#: .././wpumaintenance.php:266
 msgid "Off"
 msgstr "Désactivé"
 
-#: .././wpumaintenance.php:230
+#: .././wpumaintenance.php:266
 msgid "On"
 msgstr "Activé"
 
-#: .././wpumaintenance.php:250
+#: .././wpumaintenance.php:286
 #, php-format
 msgid "%s is in maintenance mode."
 msgstr "%s est en mode maintenance."

@@ -1,6 +1,8 @@
 WPU Maintenance
 ==============
 
+Add [![PHP workflow](https://github.com/WordPressUtilities/wpumaintenance/actions/workflows/php.yml/badge.svg 'PHP workflow')](https://github.com/WordPressUtilities/wpumaintenance/actions) to your README.md
+
 Adds a maintenance page for non logged-in users
 
 ## How to install :
@@ -28,4 +30,4 @@ You can use the hooks and filters of the default page ( called before the "init"
 
 ### File
 
-If you place a file named "maintenance.php", "maintenance.html" or "index.html" at the root of your active theme, it will be included instead of the default maintenance page.
+If you place a file named "maintenance.php", "maintenance.html" or "index.html" in the folder wpumaintenance/ of your active theme, it will be included instead of the default maintenance page.
